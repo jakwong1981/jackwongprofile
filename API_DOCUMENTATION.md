@@ -12,9 +12,18 @@ http://localhost:8080/api/v1
 ```
 
 ### SIT Environment
+
+#### For Docker Container Communication (inside Docker network)
+```
+http://backend:8080/api/v1
+```
+
+#### For External Browser Access (from host machine)
 ```
 http://localhost:8080/api/v1
 ```
+
+**Note:** When running in Docker, frontend containers should use `http://backend:8080/api/v1` to communicate with the backend. Browsers accessing from outside Docker should use `http://localhost:8080/api/v1`.
 
 ### Production (Example)
 ```

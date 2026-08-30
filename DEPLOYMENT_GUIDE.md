@@ -1136,3 +1136,56 @@ docker-compose -f docker-compose.sit.yml down
 ```
 
 This networking issue is a common Docker deployment challenge. Always remember that `localhost` inside a container refers to that container only, not other containers in the network.
+
+
+## ⚡ Quick Fix for "Profile Not Available" Issue
+
+If you're experiencing "profile not available" in the frontend, here's the immediate fix:
+
+### **Problem:**
+Frontend can't connect to backend because it's using the wrong API URL.
+
+### **Solution:**
+
+#### **Option 1: Update .env.sit file**
+```bash
+# Fix the API URL for Docker container communication
+cd /Users/wongchimanjack/github/full_stack_profiles/jackwongprofile
+sed -i '' 's|NEXT_PUBLIC_API_BASE_URL=.*|NEXT_PUBLIC_API_BASE_URL=http://backend:8080/api/v1|' .env.sit
+```
+
+#### **Option 2: Recreate containers with correct configuration**
+```bash
+# Stop all containers
+docker-compose -f docker-compose.sit.yml down
+
+# Start fresh with correct environment
+docker-compose --env-file .env.sit -f docker-compose.sit.yml up -d
+
+# Wait for services to start
+sleep 30
+
+# Verify deployment
+./scripts/verify-deployment.sh
+```
+
+### **Verification:**
+After applying the fix, verify with:
+```bash
+# Check frontend environment variable
+docker exec profile-frontend-sit printenv | grep NEXT_PUBLIC_API_BASE_URL
+# Should show: NEXT_PUBLIC_API_BASE_URL=http://backend:8080/api/v1
+
+# Test API connectivity from frontend container
+docker exec profile-frontend-sit curl -s http://backend:8080/api/v1/public/profile | jq '.code'
+# Should return: 200
+
+# Check frontend health status
+docker-compose -f docker-compose.sit.yml ps | grep frontend
+# Should show "healthy" status
+```
+
+This issue occurs because:
+1. Inside Docker network, containers communicate using service names (`backend`, `frontend`, `mysql`)
+2. `localhost` inside a container refers to itself, not other containers
+3. The correct URL for frontend→backend communication is `http://backend:8080/api/v1`
