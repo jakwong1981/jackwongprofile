@@ -984,3 +984,155 @@ docker-compose --env-file .env.sit -f docker-compose.sit.yml up -d
 ```
 
 The system is now fully deployed and operational in the SIT environment!
+
+
+## 🔗 Critical: Docker Networking & API Configuration
+
+### 🎯 **Root Cause of "Profile Not Available" Issue**
+
+During deployment testing, a critical networking issue was discovered that prevents the frontend from accessing the backend API.
+
+#### **The Problem:**
+- Frontend container is configured with `NEXT_PUBLIC_API_BASE_URL=http://localhost:8080/api/v1`
+- Inside Docker network, `localhost` refers to the **frontend container itself**, not the backend container
+- The backend container is accessible via its service name `backend` within the Docker network
+
+#### **The Solution:**
+Update the API base URL configuration based on your access method:
+
+**Option A: For Docker Container Communication (Recommended)**
+```bash
+# In .env.sit file
+NEXT_PUBLIC_API_BASE_URL=http://backend:8080/api/v1
+```
+
+**Option B: For Browser Access from Outside Docker**
+```bash
+# In .env.sit file  
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080/api/v1
+```
+
+### 🛠️ **Immediate Fix Commands**
+
+If you're experiencing "profile not available" in the frontend:
+
+```bash
+# Fix the environment configuration
+cd /Users/wongchimanjack/github/full_stack_profiles/jackwongprofile
+
+# For Docker container communication (most common fix)
+sed -i '' 's|NEXT_PUBLIC_API_BASE_URL=http://localhost:8080/api/v1|NEXT_PUBLIC_API_BASE_URL=http://backend:8080/api/v1|' .env.sit
+
+# Restart the frontend container
+docker-compose -f docker-compose.sit.yml restart frontend
+
+# Verify the change
+docker exec profile-frontend-sit printenv | grep NEXT_PUBLIC_API_BASE_URL
+```
+
+### 📝 **Understanding Docker Networking**
+
+#### **Key Concepts:**
+1. **Service Names**: Containers communicate using service names defined in `docker-compose.yml`
+   - `backend` = Spring Boot application
+   - `mysql` = MySQL database
+   - `frontend` = Next.js application
+
+2. **Network Types**:
+   - **Internal Docker Network**: Use service names (e.g., `http://backend:8080`)
+   - **External Browser Access**: Use `localhost` with port mappings
+
+3. **Port Mappings**:
+   - `8080:8080` = Host port 8080 maps to container port 8080
+   - `3000:3000` = Host port 3000 maps to container port 3000
+
+#### **Common Scenarios:**
+
+**Scenario 1: Frontend → Backend (Inside Docker)**
+```javascript
+// Frontend container needs to use:
+const API_BASE = "http://backend:8080/api/v1";
+// NOT: "http://localhost:8080/api/v1"
+```
+
+**Scenario 2: Browser → Backend (Outside Docker)**
+```javascript
+// Browser needs to use:
+const API_BASE = "http://localhost:8080/api/v1";
+```
+
+**Scenario 3: Browser → Frontend → Backend**
+This requires a proxy configuration or environment-based URL switching.
+
+### 🔧 **Configuration Best Practices**
+
+#### **1. Environment-Specific Configuration**
+Create different environment files:
+- `.env.sit.docker` - For Docker container communication
+- `.env.sit.browser` - For browser testing
+
+#### **2. Dynamic URL Configuration**
+Update your frontend code to handle different environments:
+```javascript
+// In frontend configuration
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 
+  (typeof window !== 'undefined' ? 'http://localhost:8080/api/v1' : 'http://backend:8080/api/v1');
+```
+
+#### **3. Docker Compose Enhancement**
+Consider updating `docker-compose.sit.yml`:
+```yaml
+frontend:
+  environment:
+    NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://backend:8080/api/v1}
+    # This provides a sensible default for Docker networking
+```
+
+### 🧪 **Testing the Fix**
+
+After applying the fix, verify with these commands:
+
+```bash
+# 1. Check frontend environment
+docker exec profile-frontend-sit printenv | grep NEXT_PUBLIC
+
+# 2. Test frontend-backend connection from inside frontend container
+docker exec profile-frontend-sit curl -s http://backend:8080/api/v1/public/profile | jq '.code'
+
+# 3. Check frontend logs for API errors
+docker-compose -f docker-compose.sit.yml logs frontend --tail=20
+
+# 4. Verify frontend health status
+docker-compose -f docker-compose.sit.yml ps | grep frontend
+```
+
+### 📊 **Troubleshooting Checklist**
+
+If profile data is still not available:
+
+1. ✅ Verify `NEXT_PUBLIC_API_BASE_URL` is set to `http://backend:8080/api/v1`
+2. ✅ Check if frontend container can reach backend: `docker exec profile-frontend-sit ping backend`
+3. ✅ Verify backend is running: `curl http://localhost:8080/actuator/health`
+4. ✅ Check CORS configuration in backend allows `http://frontend:3000`
+5. ✅ Review frontend browser console for network errors
+6. ✅ Ensure containers are on same network: `docker network inspect jackwongprofile_profile-network`
+
+### ⚡ **Quick Reference Commands**
+
+```bash
+# Fix API URL for Docker networking
+sed -i '' 's|localhost:8080|backend:8080|' .env.sit
+
+# Test connection from frontend container
+docker exec profile-frontend-sit curl -I http://backend:8080/api/v1/public/profile
+
+# View network configuration
+docker network ls
+docker network inspect jackwongprofile_profile-network
+
+# Reset and redeploy with fix
+docker-compose -f docker-compose.sit.yml down
+./scripts/deploy-and-verify.sh
+```
+
+This networking issue is a common Docker deployment challenge. Always remember that `localhost` inside a container refers to that container only, not other containers in the network.
