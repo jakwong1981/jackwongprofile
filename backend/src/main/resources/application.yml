@@ -1,0 +1,165 @@
+# backend/src/main/resources/application.yml
+spring:
+  application:
+    name: profile-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/jackwong_profile?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=utf8}
+    username: ${DB_USERNAME:profile}
+    password: ${DB_PASSWORD:profile}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      pool-name: profile-hikari
+      maximum-pool-size: ${DB_POOL_MAX:20}
+      minimum-idle: ${DB_POOL_MIN:5}
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      validation-timeout: 5000
+      connection-test-query: SELECT 1
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      # Flyway owns the schema; Hibernate must never emit or validate DDL.
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: false
+        # Batch-loads lazy collections so a profile aggregate never degrades into N+1 selects.
+        default_batch_fetch_size: 50
+        jdbc:
+          batch_size: 30
+          time_zone: UTC
+        order_inserts: true
+        order_updates: true
+    show-sql: false
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration/mysql
+
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+
+  task:
+    scheduling:
+      pool:
+        size: 2
+
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+  error:
+    include-message: never
+    include-stacktrace: never
+  servlet:
+    context-path: /
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+
+logging:
+  level:
+    root: INFO
+    com.jackwong.profile: ${LOG_LEVEL_APP:INFO}
+    org.hibernate.SQL: WARN
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+    allowed-methods: GET,POST,PUT,PATCH,DELETE,OPTIONS
+    allowed-headers: "*"
+    allow-credentials: true
+    max-age: 3600
+
+  security:
+    jwt:
+      # Base64-encoded 256-bit (or longer) secret. MUST be overridden in every non-local environment.
+      secret: ${JWT_SECRET:Y2hhbmdlLW1lLWluLXByb2R1Y3Rpb24tdGhpcy1pcy1hLWRldi1vbmx5LTI1Ni1iaXQtc2VjcmV0LWtleQ==}
+      issuer: jackwong-profile
+      access-token-ttl-seconds: ${JWT_ACCESS_TTL:3600}
+      refresh-token-ttl-seconds: ${JWT_REFRESH_TTL:604800}
+    bootstrap:
+      enabled: ${ADMIN_BOOTSTRAP_ENABLED:true}
+      username: ${ADMIN_USERNAME:admin}
+      password: ${ADMIN_PASSWORD:ChangeMe123!}
+      display-name: Site Administrator
+
+  deepseek:
+    enabled: ${DEEPSEEK_ENABLED:false}
+    base-url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com}
+    api-key: ${DEEPSEEK_API_KEY:}
+    model: ${DEEPSEEK_MODEL:deepseek-chat}
+    temperature: 0.2
+    max-tokens: 1200
+    connect-timeout-ms: 10000
+    read-timeout-ms: 60000
+
+  news:
+    ingestion:
+      enabled: ${NEWS_INGESTION_ENABLED:true}
+      # Every day at 06:15 and 18:15 server time.
+      cron: ${NEWS_INGESTION_CRON:0 15 6,18 * * *}
+      max-items-per-source: 12
+      user-agent: "JackWongProfileBot/1.0 (+https://github.com/quo8/jackwongprofile)"
+      request-timeout-ms: 15000
+      auto-analyze: ${NEWS_AUTO_ANALYZE:true}
+    sources:
+      - key: RUNDOWN_AI
+        display-name: The Rundown AI
+        site-url: https://www.therundown.ai
+        feed-url: https://www.therundown.ai/archive?sort=new
+        type: HTML
+        item-selector: "a[href*='/p/']"
+        title-selector: "self"
+        link-selector: "self"
+        enabled: true
+      - key: TECHCRUNCH_AI
+        display-name: TechCrunch AI
+        site-url: https://techcrunch.com/category/artificial-intelligence
+        feed-url: https://techcrunch.com/category/artificial-intelligence/feed/
+        type: RSS
+        enabled: true
+      - key: MIT_TECH_REVIEW_AI
+        display-name: MIT Technology Review - AI
+        site-url: https://www.technologyreview.com/topic/artificial-intelligence
+        feed-url: https://www.technologyreview.com/topic/artificial-intelligence/feed
+        type: RSS
+        enabled: true
+      - key: THE_BATCH
+        display-name: The Batch (DeepLearning.AI)
+        site-url: https://www.deeplearning.ai/the-batch
+        feed-url: https://www.deeplearning.ai/the-batch/
+        type: HTML
+        item-selector: "a[href^='/the-batch/'], a[href^='https://www.deeplearning.ai/the-batch/']"
+        title-selector: "self"
+        link-selector: "self"
+        enabled: true
+      - key: HUGGINGFACE_PAPERS
+        display-name: Hugging Face Daily Papers
+        site-url: https://huggingface.co/papers
+        feed-url: https://huggingface.co/papers
+        type: HTML
+        item-selector: "a[href^='/papers/']"
+        title-selector: "self"
+        link-selector: "self"
+        enabled: true

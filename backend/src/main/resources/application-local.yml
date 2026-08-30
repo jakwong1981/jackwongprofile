@@ -1,0 +1,15 @@
+# backend/src/main/resources/application-local.yml
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/jackwong_profile?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=utf8
+    username: profile
+    password: profile
+
+logging:
+  level:
+    com.jackwong.profile: DEBUG
+
+app:
+  news:
+    ingestion:
+      enabled: false

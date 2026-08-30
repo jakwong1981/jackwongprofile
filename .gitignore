@@ -1,0 +1,29 @@
+# --- Java / Maven ---
+backend/target/
+*.class
+*.jar
+!backend/.mvn/wrapper/maven-wrapper.jar
+
+# --- Node / Next.js ---
+node_modules/
+frontend/.next/
+frontend/out/
+frontend/coverage/
+frontend/next-env.d.ts
+*.tsbuildinfo
+
+# --- Environment ---
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# --- Editors / OS ---
+.idea/
+.vscode/
+.DS_Store
+*.iml
+*.log
+
+# --- Docker volumes ---
+docker/data/
