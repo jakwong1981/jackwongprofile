@@ -1,0 +1,21 @@
+{
+  "esversion": 9,
+  "node": true,
+  "browser": true,
+  "undef": true,
+  "unused": true,
+  "strict": false,
+  "globals": {
+    "window": true,
+    "document": true,
+    "console": true,
+    "module": true,
+    "require": true,
+    "process": true,
+    "__dirname": true,
+    "setTimeout": true,
+    "clearTimeout": true,
+    "setInterval": true,
+    "clearInterval": true
+  }
+}

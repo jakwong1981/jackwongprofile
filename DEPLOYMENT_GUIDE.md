@@ -134,7 +134,10 @@ JWT_SECRET=YourJwtSecretKeyHereChangeInProduction
 JWT_EXPIRATION=86400000
 
 # Frontend
+# For browser access - use localhost
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8080/api/v1
+# For server-side rendering inside Docker - use backend hostname
+API_INTERNAL_BASE_URL=http://backend:8080/api/v1
 NEXT_PUBLIC_APP_NAME="Jack Wong Profile"
 NEXT_PUBLIC_APP_VERSION=1.0.0
 
@@ -615,7 +618,59 @@ version: '3.8'  # This line is now obsolete
 
 **Documentation Update:** Added note about Docker Compose version compatibility.
 
-### Issue 3: Backend Container Dependency Failure
+### Issue 3: "Profile Not Available" - Browser Cannot Access API
+**Problem:** Frontend shows "Profile not available" or "Invalid profile" even when backend API is working.
+
+**Root Cause:** Docker networking issue - browser cannot resolve `backend` hostname
+1. Docker Compose sets `NEXT_PUBLIC_API_BASE_URL=http://backend:8080/api/v1` for frontend container
+2. Browser runs outside Docker and cannot resolve `backend` hostname
+3. Frontend code uses `localhost` for browser, `backend` for server-side rendering
+
+**Fix:**
+```yaml
+# In docker-compose.sit.yml frontend service:
+environment:
+  NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8080/api/v1}  # Browser access
+  API_INTERNAL_BASE_URL: ${API_INTERNAL_BASE_URL:-http://backend:8080/api/v1}          # SSR access
+```
+
+**Also update .env.sit:**
+```bash
+# For browser access - use localhost
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8080/api/v1
+# For server-side rendering inside Docker - use backend hostname
+API_INTERNAL_BASE_URL=http://backend:8080/api/v1
+```
+
+**Frontend Code Already Handles This:**
+```typescript
+// In frontend/src/lib/api/client.ts
+export function resolveBaseUrl(): string {
+  const publicUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8080';
+  if (typeof window !== 'undefined') {
+    return stripTrailingSlash(publicUrl);  // Browser uses NEXT_PUBLIC_API_BASE_URL
+  }
+  return stripTrailingSlash(process.env.API_INTERNAL_BASE_URL ?? publicUrl);  // SSR uses API_INTERNAL_BASE_URL
+}
+```
+
+**Verification:**
+```bash
+# Test browser access
+curl http://localhost:3000
+# Should return HTML with profile data
+
+# Test API directly
+curl http://localhost:8080/api/v1/public/profile
+# Should return JSON profile data
+
+# Check environment variables in frontend container
+docker exec profile-frontend-sit printenv | grep -E "NEXT_PUBLIC_API_BASE_URL|API_INTERNAL_BASE_URL"
+```
+
+**Documentation Update:** Added API configuration troubleshooting and solution.
+
+### Issue 4: Backend Container Dependency Failure
 **Problem:** Backend container fails to start with dependency error.
 
 **Possible Causes:**

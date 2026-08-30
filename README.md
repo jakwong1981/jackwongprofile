@@ -158,3 +158,49 @@ For issues and questions:
 
 ---
 **Built with ❤️ using modern development practices**
+
+
+## 🛠️ Development Setup
+
+### Code Quality Tools
+
+This project uses multiple code quality tools:
+
+1. **ESLint** - Primary linter for TypeScript/JavaScript
+   ```bash
+   # Run ESLint
+   cd frontend && npm run lint
+   ```
+
+2. **TypeScript** - Type checking
+   ```bash
+   # Run type checking
+   cd frontend && npm run typecheck
+   ```
+
+3. **JSHint** - Installed for VS Code compatibility
+   ```bash
+   # Run JSHint (optional)
+   cd frontend && npm run jshint
+   ```
+
+### VS Code Configuration
+
+If you see "Failed to load jshint library" errors:
+
+1. **JSHint is now installed** as a dev dependency
+2. **VS Code settings** have been configured to prefer ESLint over JSHint
+3. **.jshintrc** configuration file has been created in project root
+
+To disable JSHint in VS Code entirely:
+1. Open VS Code Command Palette (`Cmd+Shift+P` or `Ctrl+Shift+P`)
+2. Type "Extensions: Show Installed Extensions"
+3. Search for "JSHint" extension
+4. Click "Disable" if you prefer to use ESLint only
+
+### Recommended Workflow
+
+For best results with this TypeScript/Next.js project:
+- Use **ESLint** as your primary linter (`npm run lint`)
+- Use **TypeScript** for type checking (`npm run typecheck`)
+- JSHint is installed only for editor compatibility
