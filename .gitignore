@@ -27,3 +27,4 @@ frontend/next-env.d.ts
 
 # --- Docker volumes ---
 docker/data/
+.env.sit
