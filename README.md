@@ -229,3 +229,62 @@ For best results with this TypeScript/Next.js project:
 - Use **ESLint** as your primary linter (`npm run lint`)
 - Use **TypeScript** for type checking (`npm run typecheck`)
 - JSHint is installed only for editor compatibility
+
+## 📋 Bugfix Specifications
+
+### Current Issues Resolved
+1. **Profile Service Connectivity** - Fixed Docker container communication and CORS configuration
+2. **npm Build Failure** - Resolved TypeScript compilation issues
+
+### Active Issues
+1. **JSON Display Format Issue** - Profile summary field shows raw JSON instead of properly parsed text
+   - **Spec**: [bugfix.md](kiro-spec://create?featureName=profile-summary-json-issue&documentType=bugfix)
+   - **Design**: [design.md](kiro-spec://create?featureName=profile-summary-json-issue&documentType=design)
+   - **Tasks**: [tasks.md](kiro-spec://create?featureName=profile-summary-json-issue&documentType=tasks)
+
+## 🚀 Quick Start
+
+### Deploy to SIT Environment
+```bash
+# Run full deployment
+./scripts/deploy-sit.sh
+
+# Verify deployment
+./scripts/validate-deployment.sh
+```
+
+### Test System
+```bash
+# Test API connectivity
+curl http://localhost:8080/api/v1/public/profile
+
+# Test frontend
+curl http://localhost:3000
+
+# Check container status
+docker-compose -f docker-compose.sit.yml ps
+```
+
+## 🔧 Development Workflow
+
+1. **Bug Discovery**: Identify issue in running system
+2. **Spec Creation**: Create bugfix specification using Kiro workflow
+3. **Implementation**: Execute tasks from tasks.md
+4. **Testing**: Validate fix and ensure no regressions
+5. **Deployment**: Deploy fix to SIT environment
+
+## 📚 Documentation
+
+- [API Documentation](API_DOCUMENTATION.md) - Complete API reference
+- [Deployment Guide](DEPLOYMENT_GUIDE.md) - Deployment instructions and troubleshooting
+- [Technical Specification](TECHNICAL_SPEC.md) - System architecture and design
+- [Fixes Summary](FIXES_SUMMARY.md) - Summary of all applied fixes
+
+## 🐛 Bug Tracking
+
+All bug specifications are maintained in the `.kiro/specs/` directory. Each bugfix follows the structured workflow:
+1. **requirements.md** - Bug analysis and requirements
+2. **design.md** - Technical solution design
+3. **tasks.md** - Implementation tasks
+
+Current active bug: `profile-summary-json-issue`
