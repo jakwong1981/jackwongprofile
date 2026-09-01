@@ -34,16 +34,7 @@ else
     export SPRING_PROFILES_ACTIVE="docker"
     export DEEPSEEK_API_KEY="your-deepseek-api-key-here"
     export NEXT_PUBLIC_API_BASE_URL="http://localhost:8080/api/v1"
-fi
-
-# Create Docker network if not exists
-echo ""
-echo "🔗 Checking Docker network..."
-if ! docker network ls | grep -q "profile-network"; then
-    echo "   Creating Docker network: profile-network"
-    docker network create profile-network
-else
-    echo "   Docker network 'profile-network' already exists"
+    export API_INTERNAL_BASE_URL="http://backend:8080/api/v1"
 fi
 
 # Build Docker images
@@ -60,6 +51,7 @@ docker build -f Dockerfile.frontend -t jackwongprofile-frontend:1.0.0 .
 # Start services using docker-compose
 echo ""
 echo "🚀 Starting services with docker-compose..."
+docker-compose -f docker-compose.sit.yml down 2>/dev/null || true
 docker-compose -f docker-compose.sit.yml up -d
 
 echo ""
@@ -69,12 +61,12 @@ echo "⏳ Waiting for services to be healthy..."
 echo "📊 Waiting for MySQL to be ready..."
 MAX_WAIT=60
 WAITED=0
-while ! docker exec profile-db mysqladmin ping -h"127.0.0.1" -uroot -p"${DB_ROOT_PASSWORD:-RootPass123!}" --silent 2>/dev/null; do
+while ! docker-compose -f docker-compose.sit.yml exec -T mysql mysqladmin ping -h"127.0.0.1" -uroot -p"${DB_ROOT_PASSWORD:-RootPass123!}" --silent 2>/dev/null; do
     sleep 2
     WAITED=$((WAITED + 2))
     if [ $WAITED -ge $MAX_WAIT ]; then
         echo "❌ MySQL did not become ready within $MAX_WAIT seconds"
-        docker-compose -f docker-compose.sit.yml logs db
+        docker-compose -f docker-compose.sit.yml logs mysql
         exit 1
     fi
     echo -n "."
@@ -87,18 +79,18 @@ echo ""
 echo "🗄️  Initializing database..."
 if [ -f "$PROJECT_ROOT/docker/mysql/init.sql" ]; then
     echo "   Running database initialization script..."
-    docker exec -i profile-db mysql -uroot -p"${DB_ROOT_PASSWORD:-RootPass123!}" profile_db < "$PROJECT_ROOT/docker/mysql/init.sql"
+    docker-compose -f docker-compose.sit.yml exec -T mysql mysql -uroot -p"${DB_ROOT_PASSWORD:-RootPass123!}" jackwong_profile < "$PROJECT_ROOT/docker/mysql/init.sql"
     echo "✅ Database initialized"
 else
     echo "⚠️  No database initialization script found at docker/mysql/init.sql"
 fi
 
-# Wait for Backend API
+# Wait for Backend API (using updated health check)
 echo ""
 echo "⚙️  Waiting for Backend API..."
 MAX_WAIT=90
 WAITED=0
-while ! curl -s -f "http://localhost:8080/actuator/health" > /dev/null 2>&1; do
+while ! curl -s -f "http://localhost:8080/api/v1/public/profile" > /dev/null 2>&1; do
     sleep 2
     WAITED=$((WAITED + 2))
     if [ $WAITED -ge $MAX_WAIT ]; then
@@ -109,7 +101,7 @@ while ! curl -s -f "http://localhost:8080/actuator/health" > /dev/null 2>&1; do
     echo -n "."
 done
 echo ""
-echo "✅ Backend API is ready"
+echo "✅ Backend API is ready (tested actual API endpoint)"
 
 # Wait for Frontend
 echo ""
@@ -129,24 +121,14 @@ done
 echo ""
 echo "✅ Frontend is ready"
 
-# Run health checks
+# Run validation script
 echo ""
-echo "🔍 Running health checks..."
-
-# Backend health check
-echo "   Backend health:"
-BACKEND_HEALTH=$(curl -s "http://localhost:8080/actuator/health" | jq -r '.status' 2>/dev/null || echo "UNKNOWN")
-echo "     Status: $BACKEND_HEALTH"
-
-# Database health check
-echo "   Database health:"
-DB_TABLES=$(docker exec profile-db mysql -uroot -p"${DB_ROOT_PASSWORD:-RootPass123!}" profile_db -e "SHOW TABLES;" 2>/dev/null | wc -l)
-echo "     Tables count: $((DB_TABLES - 1))"
-
-# Frontend health check
-echo "   Frontend health:"
-FRONTEND_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:3000")
-echo "     HTTP Status: $FRONTEND_RESPONSE"
+echo "🔍 Running deployment validation..."
+if [ -f "$SCRIPT_DIR/validate-deployment.sh" ]; then
+    bash "$SCRIPT_DIR/validate-deployment.sh"
+else
+    echo "⚠️  Validation script not found, skipping validation"
+fi
 
 echo ""
 echo "========================================================"
@@ -155,15 +137,15 @@ echo ""
 echo "📱 Access Points:"
 echo "   Frontend Application:      http://localhost:3000"
 echo "   Backend API:              http://localhost:8080"
-echo "   Swagger UI:               http://localhost:8080/swagger-ui.html"
+echo "   API Documentation:        http://localhost:8080/api/v1"
 echo "   Spring Boot Actuator:     http://localhost:8080/actuator"
-echo "   MySQL Database:           localhost:3307"
+echo "   MySQL Database:           localhost:3306"
 echo "     Username: root"
 echo "     Password: ${DB_ROOT_PASSWORD:-RootPass123!}"
 echo ""
 echo "👤 Default Admin Credentials:"
 echo "   Username: admin"
-echo "   Password: ChangeMe123!"
+echo "   Password: ${ADMIN_PASSWORD:-ChangeMe123!}"
 echo ""
 echo "🔧 Management Commands:"
 echo "   View logs:                docker-compose -f docker-compose.sit.yml logs -f"
@@ -180,7 +162,10 @@ echo "   2. Login to admin panel with credentials above"
 echo "   3. Configure your DeepSeek API key in .env.sit file"
 echo "   4. Test news aggregation by visiting /admin/news"
 echo ""
-echo "⚠️  Security Note:"
+echo "⚠️  Important Notes:"
+echo "   - The frontend uses dual API URLs:"
+echo "     - Browser: $NEXT_PUBLIC_API_BASE_URL"
+echo "     - SSR (Server-side): $API_INTERNAL_BASE_URL"
 echo "   - Change default passwords in production"
 echo "   - Configure proper SSL certificates"
 echo "   - Set up firewall rules"
@@ -188,4 +173,4 @@ echo "   - Regular database backups"
 echo ""
 echo "========================================================"
 echo "Deployment completed at: $(date)"
-echo "Script version: 1.0.0"
+echo "Script version: 2.0.0 (Updated for improved health checks)"

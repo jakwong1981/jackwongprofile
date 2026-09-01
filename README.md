@@ -1,3 +1,28 @@
+# 🚨 RECENT FIXES & CRITICAL UPDATES
+
+## Fix 1: Dual API URL Configuration
+**Problem**: "Profile service could not be reached" error in Docker deployments
+**Solution**: System now uses two API endpoints:
+- **Client-side**: `NEXT_PUBLIC_API_BASE_URL=http://localhost:8080/api/v1` (browser access)
+- **Server-side (SSR)**: `API_INTERNAL_BASE_URL=http://backend:8080/api/v1` (Docker network)
+
+## Fix 2: Improved Health Checks
+**Problem**: Health checks passed but actual API calls failed
+**Solution**: Updated to test real API endpoints (`/api/v1/public/profile`) instead of just actuator
+
+## Fix 3: TypeScript Build Fixes
+**Problem**: npm build failures due to TypeScript linting errors
+**Solution**: Fixed `@typescript-eslint/no-explicit-any` violations in SSR client
+
+## Fix 4: Deployment Script Corrections
+**Problem**: Script used wrong container names and health checks
+**Solution**: Updated `scripts/deploy-sit.sh` with:
+- Correct container names (mysql, backend, frontend)
+- Proper health check URLs
+- Dual API URL support
+
+---
+
 # Jack Wong Personal Profile Management System
 
 ## 📋 Project Overview
