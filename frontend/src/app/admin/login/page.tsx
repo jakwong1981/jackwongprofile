@@ -7,7 +7,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { LocaleSwitcher } from '@/components/layout/LocaleSwitcher';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { TextField } from '@/components/ui/Field';
+import { TextField, PasswordField } from '@/components/ui/Field';
 import { authApi } from '@/lib/api/auth';
 import { ApiError, toErrorMessage } from '@/lib/api/errors';
 import { readSession } from '@/lib/api/token-store';
@@ -76,9 +76,8 @@ export default function AdminLoginPage(): JSX.Element {
               required
               onChange={(event) => setUsername(event.target.value)}
             />
-            <TextField
+            <PasswordField
               label={t('admin.password')}
-              type="password"
               value={password}
               autoComplete="current-password"
               required

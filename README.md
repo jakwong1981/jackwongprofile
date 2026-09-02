@@ -42,7 +42,7 @@ A dynamic personal profile management system with real-time updates, AI-powered 
 - **Responsive Design**: Fully responsive across desktop, tablet, and mobile
 - **Hierarchical Data Models**: Nested work experience (employer → positions → responsibilities)
 - **Comprehensive CRUD Operations**: Full administrative control over all data
-- **Upcoming Enhancements**: High-capacity file uploads, persistent navigation, improved multilingual support, and auto-translation (see Enhancements v1 section)
+- **Upcoming Enhancements**: High-capacity file uploads, persistent navigation, improved multilingual support, auto-translation, and password visibility toggle (see Enhancements v1 section)
 
 ## 🚀 Quick Start
 
@@ -151,19 +151,29 @@ jackwongprofile/
 - Create automated translation pipeline triggered on content updates
 - Implement error handling and manual override capabilities
 
+### **Enhancement 5: Password Field Visibility Toggle**
+**Goal**: Improve admin portal usability with password visibility toggle
+**Current System**: Password fields use standard HTML password input (text hidden)
+**Technical Requirements**:
+- Create `PasswordField` component with eye icon toggle
+- Implement show/hide password functionality with proper accessibility
+- Maintain security while improving user experience
+- Add visual feedback for password visibility state
+
 ### **Implementation Priority**
 **Phase 1 (Foundation)**:
 1. Persistent navigation enhancement
 2. Client-side language selection improvements
+3. Password field visibility toggle
 
 **Phase 2 (Core Features)**:
-3. File upload infrastructure with basic image handling
-4. DeepSeek translation integration for key content fields
+4. File upload infrastructure with basic image handling
+5. DeepSeek translation integration for key content fields
 
 **Phase 3 (Advanced Features)**:
-5. Chunked uploads for large files
-6. Comprehensive image optimization pipeline
-7. Full automated translation across all multilingual fields
+6. Chunked uploads for large files
+7. Comprehensive image optimization pipeline
+8. Full automated translation across all multilingual fields
 
 ### **Success Metrics**
 - **Upload Success Rate**: >95% successful file uploads under 500MB

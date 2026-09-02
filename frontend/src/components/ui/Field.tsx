@@ -1,7 +1,8 @@
 // frontend/src/components/ui/Field.tsx
 'use client';
 
-import { useId, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
+import { useId, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes, useState } from 'react';
 import { cn } from '@/lib/utils/cn';
 
 const CONTROL_CLASSES =
@@ -152,5 +153,62 @@ export function CheckboxField({ label, className, ...rest }: CheckboxFieldProps)
         {label}
       </label>
     </div>
+  );
+}
+
+export interface PasswordFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'id' | 'type'> {
+  label: string;
+  hint?: string;
+  error?: string | undefined;
+  containerClassName?: string;
+}
+
+/** Password field with visibility toggle (eye icon) for improved usability. */
+export function PasswordField({
+  label,
+  hint,
+  error,
+  containerClassName,
+  className,
+  ...rest
+}: PasswordFieldProps): JSX.Element {
+  const id = useId();
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  return (
+    <FieldShell id={id} label={label} {...(hint ? { hint } : {})} error={error} className={containerClassName}>
+      <div className="relative">
+        <input
+          id={id}
+          type={showPassword ? 'text' : 'password'}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? `${id}-error` : undefined}
+          className={cn(
+            CONTROL_CLASSES,
+            'pr-10', // Add padding for the eye icon
+            error && INVALID_CLASSES,
+            className
+          )}
+          {...rest}
+        />
+        <button
+          type="button"
+          onClick={togglePasswordVisibility}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600 focus:outline-none focus:ring-2 focus:ring-accent-400 focus:ring-offset-2 rounded p-1"
+          aria-label={showPassword ? 'Hide password' : 'Show password'}
+          aria-pressed={showPassword}
+        >
+          {showPassword ? (
+            <EyeOff aria-hidden className="h-4 w-4" />
+          ) : (
+            <Eye aria-hidden className="h-4 w-4" />
+          )}
+        </button>
+      </div>
+    </FieldShell>
   );
 }
