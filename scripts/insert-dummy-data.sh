@@ -57,9 +57,10 @@ USE jackwong_profile;
 -- TRUNCATE TABLE news_article;
 -- TRUNCATE TABLE news_ingestion_run;
 
--- Insert Admin User
+-- Insert Admin User (Note: Actual admin is created by Spring Boot bootstrap)
+-- These are placeholder references for documentation
 INSERT INTO admin_user (id, created_at, updated_at, username, password_hash, enabled, role) VALUES
-(1, NOW(), NOW(), 'admin', '$2a$10$abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRST', TRUE, 'ROLE_ADMIN'),
+(1, NOW(), NOW(), 'system-admin', '$2a$10$abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRST', TRUE, 'ROLE_ADMIN'),
 (2, NOW(), NOW(), 'editor', '$2a$10$abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRST', TRUE, 'ROLE_EDITOR');
 
 -- Insert Main Profile
@@ -214,8 +215,8 @@ echo "🎯 Test Data Access:"
 echo "--------------------"
 echo "1. Frontend: http://localhost:3000"
 echo "2. Admin Login: http://localhost:3000/admin/login"
-echo "   • Username: admin"
-echo "   • Password: ChangeMe123! (use actual admin password)"
+echo "   • Username: system-admin"
+echo "   • Password: SecureAdminPass2024! (use actual admin password)"
 echo "3. API Endpoint: http://localhost:8080/api/v1/public/profile"
 echo "4. News Feed: http://localhost:3000/news"
 

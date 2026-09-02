@@ -300,9 +300,9 @@ USE profile_db;
 -- Create tables (Flyway will handle this in production)
 -- This file is for initial test data
 
--- Insert admin user (password: ChangeMe123!)
+-- Insert admin user (password: SecureAdminPass2024!)
 INSERT INTO admin_users (username, password_hash, display_name, role, created_at, updated_at)
-VALUES ('admin', '$2a$10$YourHashedPasswordHere', 'Administrator', 'ADMIN', NOW(), NOW())
+VALUES ('system-admin', '$2a$10$YourHashedPasswordHere', 'Administrator', 'ADMIN', NOW(), NOW())
 ON DUPLICATE KEY UPDATE updated_at = NOW();
 
 -- Insert sample profile

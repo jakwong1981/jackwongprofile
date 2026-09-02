@@ -81,8 +81,8 @@ Authenticates a user and returns JWT tokens.
 #### Request Body
 ```json
 {
-  "username": "admin",
-  "password": "ChangeMe123!"
+  "username": "system-admin",
+  "password": "SecureAdminPass2024!"
 }
 ```
 
@@ -623,7 +623,7 @@ http://localhost:8080/swagger-ui.html
 ```bash
 curl -X POST http://localhost:8080/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"admin","password":"ChangeMe123!"}'
+  -d '{"username":"system-admin","password":"SecureAdminPass2024!"}'
 ```
 
 #### Get Public Profile

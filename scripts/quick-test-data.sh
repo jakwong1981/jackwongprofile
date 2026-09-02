@@ -83,8 +83,8 @@ SQL
     echo "   • Admin Panel: http://localhost:3000/admin/login"
     echo ""
     echo "🔧 Test Credentials:"
-    echo "   Username: admin"
-    echo "   Password: ChangeMe123!"
+    echo "   Username: system-admin"
+    echo "   Password: SecureAdminPass2024!"
     
 else
     echo "❌ MySQL is not running"

@@ -74,7 +74,7 @@ cd frontend && npm run dev
 ### Default Access
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:8080
-- **Admin Login**: Username: `admin`, Password: `ChangeMe123!`
+- **Admin Login**: Username: `system-admin`, Password: `SecureAdminPass2024!`
 - **API Documentation**: http://localhost:8080/swagger-ui.html
 
 ## 🏗️ Architecture

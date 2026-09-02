@@ -100,8 +100,8 @@ app:
       refresh-token-ttl-seconds: ${JWT_REFRESH_TTL:604800}
     bootstrap:
       enabled: ${ADMIN_BOOTSTRAP_ENABLED:true}
-      username: ${ADMIN_USERNAME:admin}
-      password: ${ADMIN_PASSWORD:ChangeMe123!}
+      username: ${ADMIN_USERNAME:system-admin}
+      password: ${ADMIN_PASSWORD:SecureAdminPass2024!}
       display-name: Site Administrator
 
   deepseek:
