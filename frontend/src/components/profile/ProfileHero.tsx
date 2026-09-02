@@ -5,6 +5,7 @@
 import { MapPin } from 'lucide-react';
 import { ContactLinks } from '@/components/profile/ContactLinks';
 import { useTranslations } from '@/lib/i18n/LocaleProvider';
+import { asLocalizedText } from '@/lib/i18n/locale';
 import type { Profile } from '@/types/profile';
 
 export interface ProfileHeroProps {
@@ -18,9 +19,9 @@ export interface ProfileHeroProps {
 export function ProfileHero({ profile }: ProfileHeroProps): JSX.Element {
   const { tx } = useTranslations();
 
-  const displayName = tx(profile.localizedFullName) || profile.fullName;
-  const headline = tx(profile.headline);
-  const jobTitle = tx(profile.jobTitle);
+  const displayName = tx(asLocalizedText(profile.localizedFullName as unknown as string)) || profile.fullName;
+  const headline = tx(asLocalizedText(profile.headline as unknown as string));
+  const jobTitle = tx(asLocalizedText(profile.jobTitle as unknown as string));
   const currentRole = [jobTitle, profile.companyName].filter((part) => part && part !== '').join(' · ');
 
   return (

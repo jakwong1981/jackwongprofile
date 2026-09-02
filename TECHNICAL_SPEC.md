@@ -200,18 +200,43 @@ public ArticleAnalysis analyze(String title, String source, String url, String e
 
 ### Localization Architecture
 - **Frontend**: Runtime locale switching with React Context
-- **Backend**: LocalizedText entity with fallback chains
-- **Storage**: JSON column with en/zhHant/zhHans fields
-- **Resolution**: Locale → fallback → English → any available
+- **Backend**: `LocalizedText` value object (`record`) with per-locale fallback chains
+- **Storage**: Single `TEXT` column per field, persisted as a compact JSON document
+- **Resolution**: Requested locale → sibling Chinese variant → English → any non-blank value
+
+### LocalizedText Data Format
+
+Fields that carry multilingual content (e.g. `summary_i18n`, `headline_i18n`) are stored as a JSON object in a single `TEXT` column:
+
+```json
+{
+  "en":     "Enterprise-grade platforms across the whole stack.",
+  "zhHant": "全端企業級平台的設計與交付。",
+  "zhHans": "全栈企业级平台的设计与交付。"
+}
+```
+
+The `LocalizedTextConverter` JPA attribute converter handles serialisation and deserialisation. It tolerates two legacy storage anomalies:
+
+1. **Literal control characters** — older rows may contain raw newline (`\n`), carriage-return (`\r`), or tab (`\t`) bytes inside the JSON string values. These are illegal per RFC 8259 and cause Jackson to reject the document. The converter sanitises them to their escaped equivalents (`\\n`, `\\r`, `\\t`) before parsing.
+2. **Double-encoded values** — if a locale slot (typically `en`) itself contains a valid JSON-encoded `LocalizedText` object, the converter unwraps the inner object automatically and logs a warning.
+
+The frontend mirrors this defensiveness via the `asLocalizedText()` helper in `src/lib/i18n/locale.ts`, which coerces any runtime string value (e.g. a JSON string that slipped through type erasure) into a proper `LocalizedText` object before locale resolution.
 
 ### Translation Flow
 ```
-User selects locale → Context updates → UI re-renders
-                              ↓
-Database stores LocalizedText → API returns resolved text
-                              ↓
-Editor preserves all translations when editing one locale
+User selects locale → LocaleContext updates → UI re-renders
+                                 ↓
+        tx(field) calls resolveLocalized(field, locale)
+                                 ↓
+   Fallback chain: requested → sibling Chinese → English → any
 ```
+
+### Adding a New Localized Field
+1. Add a `LocalizedText` column to the entity with `@Convert(converter = LocalizedTextConverter.class)`
+2. Name the DB column with the `_i18n` suffix (e.g. `my_field_i18n`)
+3. Expose the field as `LocalizedText` in the DTO / API response
+4. In the frontend, pass the field through `tx(asLocalizedText(field))` before rendering
 
 ## 🗃️ Database Schema
 

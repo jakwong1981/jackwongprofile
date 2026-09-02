@@ -48,6 +48,34 @@ export function normalizeLocale(tag: string | null | undefined): Locale {
 }
 
 /**
+ * Coerces a value that should be a {@link LocalizedText} object into one, handling the edge
+ * case where the API delivers it as a JSON string (double-encoded in the database).  This is
+ * purely a defensive runtime guard — the TypeScript type system cannot catch this at compile
+ * time.
+ *
+ * @param value the raw field value as received from the API
+ * @returns a proper {@link LocalizedText} object, or `null` when the value is absent
+ */
+export function asLocalizedText(value: LocalizedText | string | null | undefined): LocalizedText | null {
+  if (value == null) {
+    return null;
+  }
+  if (typeof value === 'string') {
+    try {
+      const parsed: unknown = JSON.parse(value);
+      if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return parsed as LocalizedText;
+      }
+    } catch {
+      // Not a JSON string — ignore
+    }
+    // Plain text fallback: put the string into the English slot
+    return { en: value, zhHant: null, zhHans: null };
+  }
+  return value;
+}
+
+/**
  * Picks the best available translation, mirroring the backend fallback chain:
  * requested locale, then the sibling Chinese variant, then English, then anything present.
  *

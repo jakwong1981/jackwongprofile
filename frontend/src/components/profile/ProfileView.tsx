@@ -8,6 +8,7 @@ import { ProfileHero } from '@/components/profile/ProfileHero';
 import { MarkdownPreview } from '@/components/markdown/MarkdownPreview';
 import { Section } from '@/components/ui/Card';
 import { useTranslations } from '@/lib/i18n/LocaleProvider';
+import { asLocalizedText } from '@/lib/i18n/locale';
 import { formatDateTime } from '@/lib/utils/date';
 import type { Profile } from '@/types/profile';
 
@@ -22,7 +23,26 @@ export interface ProfileViewProps {
  */
 export function ProfileView({ profile }: ProfileViewProps): JSX.Element {
   const { t, tx, locale } = useTranslations();
-  const summary = tx(profile.summary);
+  // The summary field may be corrupted in the DB: the actual multilingual JSON was stored
+  // as a raw string inside the `en` slot of a LocalizedText wrapper.  We detect this by
+  // checking whether the resolved string still looks like a JSON object, and if so we
+  // parse it a second time before resolving the locale.
+  const rawSummary = asLocalizedText(profile.summary as unknown as string);
+  const resolvedOnce = tx(rawSummary);
+  const summary = (() => {
+    const trimmed = resolvedOnce.trim();
+    if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+      try {
+        const inner = JSON.parse(trimmed);
+        if (inner !== null && typeof inner === 'object' && !Array.isArray(inner)) {
+          return tx(inner as import('@/types/api').LocalizedText);
+        }
+      } catch {
+        // Not JSON — use the string as-is
+      }
+    }
+    return resolvedOnce;
+  })();
 
   return (
     <div className="flex flex-col gap-12">

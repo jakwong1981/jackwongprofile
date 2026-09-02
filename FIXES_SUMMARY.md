@@ -17,12 +17,14 @@
 - Created simplified SSR API client without Next.js-specific options
 - Fixed CORS configuration to allow `http://localhost:3000` origin
 
-## ✅ JSON Display Format Issue - IDENTIFIED
-- **Issue**: Profile summary field displays as raw JSON instead of properly parsed text
-- **Root Cause**: Double-encoded JSON in database (JSON objects stored as strings)
-- **Location**: `LocalizedTextConverter.convertToEntityAttribute()` method
-- **Spec Created**: [bugfix.md](kiro-spec://create?featureName=profile-summary-json-issue&documentType=bugfix)
-- **Tasks Ready**: Implementation tasks created in tasks.md
+## ✅ Localized Text JSON Display Issue - RESOLVED
+- **Issue**: Profile "About Me" section (and hero fields) rendered raw JSON strings like `{"en":"...","zhHant":"...","zhHans":"..."}` instead of the localized text for the active language
+- **Root Cause**: The `summary_i18n` database column stored its JSON value with literal unescaped newline characters (`0x0A`) inside the string values. These are illegal per the JSON spec, causing Jackson's `ObjectMapper` to reject the document in `LocalizedTextConverter.convertToEntityAttribute()`. The fallback path then placed the entire raw JSON string into the `en` field of a `LocalizedText` wrapper, which was then returned as display text.
+- **Files Changed**:
+  - `backend/src/main/java/com/jackwong/profile/domain/converter/LocalizedTextConverter.java` — sanitizes literal control characters (newlines, carriage returns, tabs) before JSON parsing; also unwraps double-encoded `LocalizedText` values stored in a single locale slot
+  - `frontend/src/lib/i18n/locale.ts` — added `asLocalizedText()` helper that safely coerces a runtime string value into a `LocalizedText` object (parses JSON string if needed)
+  - `frontend/src/components/profile/ProfileView.tsx` — wraps `profile.summary` through `asLocalizedText()`; adds a second-pass JSON parse guard in case the resolved string is itself a JSON object
+  - `frontend/src/components/profile/ProfileHero.tsx` — applies `asLocalizedText()` to `localizedFullName`, `headline`, and `jobTitle` for the same defensive coverage
 
 ## 📚 Documentation Updated
 1. **DEPLOYMENT_GUIDE.md** - Complete deployment guide with fixes
@@ -30,13 +32,7 @@
 3. **Bugfix documentation** - Detailed analysis and resolution
 4. **Spec documents** - Complete bugfix workflow for JSON display issue
 
-## 🚀 Next Steps
-1. Run deployment: `./scripts/deploy-sit.sh`
-2. Test frontend: http://localhost:3000
-3. Verify no "Profile service could not be reached" error
-4. Implement JSON display fix by executing tasks in [tasks.md](kiro-spec://create?featureName=profile-summary-json-issue&documentType=tasks)
-
-## 🔧 Quick Test Commands
+## 🚀 Quick Test Commands
 ```bash
 # Test build
 cd frontend && npm run build
@@ -47,18 +43,13 @@ curl -f http://localhost:8080/api/v1/public/profile
 # Test CORS configuration
 curl -v "http://localhost:8080/api/v1/public/profile" -H "Origin: http://localhost:3000"
 
-# Run deployment
-./scripts/deploy-sit.sh
+# Start the full stack
+docker compose -f docker-compose.sit.yml up --build
 
 # Check services status
-docker-compose -f docker-compose.sit.yml ps
+docker compose -f docker-compose.sit.yml ps
 ```
 
-## 📋 Spec Documents
-- [bugfix.md](kiro-spec://create?featureName=profile-summary-json-issue&documentType=bugfix) - Requirements for JSON display fix
-- [design.md](kiro-spec://create?featureName=profile-summary-json-issue&documentType=design) - Technical design and implementation plan
-- [tasks.md](kiro-spec://create?featureName=profile-summary-json-issue&documentType=tasks) - Implementation tasks ready for execution
-
 ---
-*Critical deployment issues have been fixed. JSON display issue identified with spec ready for implementation.*
+*All known issues resolved as of September 2026.*
 
