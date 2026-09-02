@@ -248,6 +248,259 @@ For deployment issues:
 
 **Common Resolution**: Most "profile service could not be reached" errors are resolved by ensuring proper dual URL configuration and network connectivity between containers.
 
+## 📂 Scripts Directory Reference
+
+The `scripts/` directory contains comprehensive automation scripts for deployment, testing, and maintenance.
+
+### **Scripts Overview**
+
+| Script | Purpose | Complexity | Typical Usage |
+|--------|---------|------------|---------------|
+| `deploy-sit.sh` | Complete SIT deployment | High | Initial setup, major changes |
+| `deploy-and-verify.sh` | Full deployment pipeline | High | Production-like deployments |
+| `verify-deployment.sh` | Deployment verification | Medium | Post-deployment checks |
+| `validate-deployment.sh` | Pre-deployment validation | Low | Before deployment |
+| `quick-test-data.sh` | Minimal test data | Low | UI/layout testing |
+| `load-test-data.sh` | Comprehensive test data | Medium | Full system testing |
+| `insert-dummy-data.sh` | Development data setup | Medium | Development environments |
+| `restart-app.sh` | Smart restart for changes | Low | Frontend-only updates |
+
+### **Detailed Script Documentation**
+
+#### **1. `deploy-sit.sh` - Primary Deployment Script**
+**Purpose**: Complete SIT environment deployment with all services
+**Key Features**:
+- Builds both backend and frontend Docker images
+- Starts all services with proper dependencies
+- Includes comprehensive health checks
+- Initializes database with migration scripts
+- Waits for each service to be ready before proceeding
+
+**Usage**:
+```bash
+./scripts/deploy-sit.sh
+```
+
+#### **2. `deploy-and-verify.sh` - Complete Deployment & Verification**
+**Purpose**: Full deployment pipeline with cleanup and verification
+**Key Features**:
+- Cleans previous deployment (volumes, networks)
+- Builds services from scratch (no-cache)
+- Starts all services
+- Runs comprehensive verification checks
+- Provides quick access links
+
+**Usage**:
+```bash
+./scripts/deploy-and-verify.sh
+```
+
+#### **3. `verify-deployment.sh` - Deployment Verification Tool**
+**Purpose**: Verify that deployment is working correctly
+**Key Features**:
+- Checks Docker container status
+- Tests HTTP endpoints (backend, frontend)
+- Verifies database connectivity
+- Checks environment variables
+- Provides colored status output
+- Shows recent logs for troubleshooting
+
+**Usage**:
+```bash
+./scripts/verify-deployment.sh
+```
+
+#### **4. `validate-deployment.sh` - Pre-deployment Validation**
+**Purpose**: Validate configuration before deployment
+**Key Features**:
+- Checks if `.env.sit` file exists
+- Validates API URL configuration
+- Checks DeepSeek API key format
+- Validates Docker Compose configuration
+- Tests API connectivity
+
+**Usage**:
+```bash
+./scripts/validate-deployment.sh
+```
+
+#### **5. `quick-test-data.sh` - Quick Layout Testing**
+**Purpose**: Insert minimal test data for UI/layout testing
+**Key Features**:
+- Inserts single test profile with all related data
+- Includes multilingual content (en/zhHant/zhHans)
+- Adds experiences, education, certifications
+- Includes test news articles
+- Safe for repeated use (uses ON DUPLICATE KEY UPDATE)
+
+**Usage**:
+```bash
+./scripts/quick-test-data.sh
+```
+
+#### **6. `load-test-data.sh` - Comprehensive Test Data**
+**Purpose**: Load comprehensive test data for full system testing
+**Key Features**:
+- Creates detailed test SQL file
+- Includes multiple profiles and related data
+- Rich multilingual content
+- Works with both direct MySQL and Docker
+- Provides test URLs and verification
+
+**Usage**:
+```bash
+./scripts/load-test-data.sh
+```
+
+#### **7. `insert-dummy-data.sh` - Development Data Setup**
+**Purpose**: Insert dummy data for development and testing
+**Key Features**:
+- Checks if MySQL is running
+- Waits for database to be ready
+- Inserts comprehensive test dataset
+- Verifies inserted data
+- Safe for development environments
+
+**Usage**:
+```bash
+./scripts/insert-dummy-data.sh
+```
+
+#### **8. `restart-app.sh` - Smart Restart Script** *(Enhanced in v1)*
+**Purpose**: Quick restart for frontend changes without full rebuild
+**Key Features**:
+- Detects which services need rebuilding
+- Only rebuilds changed components
+- Preserves database and backend data
+- Quick health checks
+- Optimized for development testing
+
+**Usage**:
+```bash
+./scripts/restart-app.sh
+```
+
+### **Workflow Examples**
+
+#### **Typical Deployment Workflow:**
+```bash
+# 1. Validate configuration
+./scripts/validate-deployment.sh
+
+# 2. Full deployment
+./scripts/deploy-sit.sh
+# OR
+./scripts/deploy-and-verify.sh
+
+# 3. Add test data
+./scripts/load-test-data.sh
+# OR for quick testing
+./scripts/quick-test-data.sh
+```
+
+#### **Development Testing Workflow:**
+```bash
+# 1. Initial setup
+./scripts/deploy-sit.sh
+
+# 2. Add test data
+./scripts/quick-test-data.sh
+
+# 3. Make frontend changes
+# ... edit frontend code ...
+
+# 4. Quick restart (frontend only)
+./scripts/restart-app.sh
+
+# 5. Test changes
+open http://localhost:3000
+```
+
+### **Script Enhancement Status for v1**
+
+Based on the enhancement_v1.md requirements, the following scripts need updates:
+
+#### **Scripts requiring updates:**
+1. **`deploy-sit.sh`** - Add file storage configuration for 500MB uploads
+2. **`deploy-and-verify.sh`** - Add verification for new features (file upload, translation)
+3. **`verify-deployment.sh`** - Test file upload endpoints and translation service
+4. **`.env.sit.example`** - Add configuration for file uploads (500MB) and translation
+
+#### **Scripts NOT requiring updates:**
+1. **`quick-test-data.sh`** - Already properly formats multilingual JSON ✅
+2. **`load-test-data.sh`** - Already properly formats multilingual JSON ✅
+3. **`insert-dummy-data.sh`** - Already properly formats multilingual JSON ✅
+4. **`validate-deployment.sh`** - Minor updates for new environment variables
+
+### **Environment Variables for v1 Enhancements**
+
+Add to `.env.sit.example` for v1 enhancements:
+```bash
+# ============================================
+# FILE UPLOAD & IMAGE PROCESSING (v1 Enhancement)
+# ============================================
+
+# File Upload Settings (500MB support)
+FILE_UPLOAD_MAX_SIZE=500MB
+FILE_UPLOAD_CHUNK_SIZE=10MB
+FILE_UPLOAD_ALLOWED_TYPES=image/jpeg,image/png,image/gif
+FILE_UPLOAD_ALLOWED_EXTENSIONS=jpg,jpeg,png,gif
+
+# Image Optimization
+IMAGE_OPTIMIZATION_ENABLED=true
+IMAGE_MAX_WIDTH=1200
+IMAGE_MAX_HEIGHT=1200
+IMAGE_QUALITY=85
+IMAGE_FORMAT=webp
+
+# Storage Configuration
+STORAGE_TYPE=local  # local, s3, cloudinary
+STORAGE_LOCAL_PATH=/var/uploads
+STORAGE_S3_BUCKET=your-bucket-name
+STORAGE_S3_REGION=ap-east-1
+STORAGE_CDN_URL=https://cdn.example.com
+
+# ============================================
+# DEEPSEEK TRANSLATION SERVICE (v1 Enhancement)
+# ============================================
+
+# Translation Configuration
+TRANSLATION_ENABLED=true
+TRANSLATION_AUTO_TRANSLATE=true
+TRANSLATION_CACHE_ENABLED=true
+TRANSLATION_CACHE_TTL=86400  # 24 hours
+TRANSLATION_FALLBACK_TO_MANUAL=true
+
+# Translation Quality
+TRANSLATION_TEMPERATURE=0.2  # Lower for more consistent translations
+TRANSLATION_MAX_TOKENS=2000
+TRANSLATION_MODEL=deepseek-chat
+
+# Supported Languages
+TRANSLATION_SOURCE_LANGUAGES=en,zhHant,zhHans
+TRANSLATION_TARGET_LANGUAGES=en,zhHant,zhHans
+```
+
+### **Quick Reference Commands**
+
+```bash
+# Most common commands
+./scripts/deploy-sit.sh           # Full deployment
+./scripts/verify-deployment.sh    # Check if everything works
+./scripts/quick-test-data.sh      # Add test data for UI testing
+./scripts/validate-deployment.sh  # Validate before deploying
+
+# Docker management
+docker-compose -f docker-compose.sit.yml ps      # Check status
+docker-compose -f docker-compose.sit.yml logs -f # View logs
+docker-compose -f docker-compose.sit.yml down    # Stop services
+
+# Testing
+curl http://localhost:8080/api/v1/public/profile # Test API
+open http://localhost:3000                       # Open frontend
+```
+
 ---
-*Last Updated: $(date)*
-*Deployment Guide Version: 2.0.0*
+*Last Updated: 2024-09-02*
+*Deployment Guide Version: 2.1.0*
+*Enhancements v1 Documentation Added*
