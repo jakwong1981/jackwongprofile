@@ -84,8 +84,8 @@ smart_restart() {
     
     # Only restart frontend if it's running
     if [ "$FRONTEND_RUNNING" = true ]; then
-        print_info "Restarting frontend service..."
-        docker-compose -f docker-compose.sit.yml restart frontend
+        print_info "Rebuilding and restarting frontend service..."
+        docker-compose -f docker-compose.sit.yml up -d --build frontend
         
         # Wait for frontend to be ready
         print_info "Waiting for frontend to be ready..."
