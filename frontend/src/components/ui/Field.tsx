@@ -188,8 +188,8 @@ export function PasswordField({
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? `${id}-error` : undefined}
           className={cn(
-            CONTROL_CLASSES,
-            'pr-10', // Add padding for the eye icon
+            'w-full rounded-xl border border-ink-200 bg-white pl-3 pr-10 py-2 text-sm text-ink-900 shadow-subtle',
+            'transition placeholder:text-ink-300 hover:border-ink-300 focus:border-accent-400 disabled:bg-ink-50 disabled:text-ink-400',
             error && INVALID_CLASSES,
             className
           )}
@@ -198,9 +198,10 @@ export function PasswordField({
         <button
           type="button"
           onClick={togglePasswordVisibility}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400 hover:text-ink-600 focus:outline-none focus:ring-2 focus:ring-accent-400 focus:ring-offset-2 rounded p-1"
+          className="absolute right-3 top-1/2 -translate-y-1/2 z-10 text-ink-500 hover:text-ink-700 focus:outline-none focus:ring-2 focus:ring-accent-400 focus:ring-offset-1 rounded p-1 transition-colors"
           aria-label={showPassword ? 'Hide password' : 'Show password'}
           aria-pressed={showPassword}
+          tabIndex={0}
         >
           {showPassword ? (
             <EyeOff aria-hidden className="h-4 w-4" />
