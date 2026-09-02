@@ -21,6 +21,10 @@
 - Proper health check URLs
 - Dual API URL support
 
+## Enhancement: Default Security Credentials Updated
+**Improvement**: Changed default admin credentials from `admin/ChangeMe123!` to more secure `system-admin/SecureAdminPass2024!`
+**Impact**: Improved security posture with descriptive username and stronger password complexity
+
 ---
 
 # Jack Wong Personal Profile Management System
@@ -38,6 +42,7 @@ A dynamic personal profile management system with real-time updates, AI-powered 
 - **Responsive Design**: Fully responsive across desktop, tablet, and mobile
 - **Hierarchical Data Models**: Nested work experience (employer → positions → responsibilities)
 - **Comprehensive CRUD Operations**: Full administrative control over all data
+- **Upcoming Enhancements**: High-capacity file uploads, persistent navigation, improved multilingual support, and auto-translation (see Enhancements v1 section)
 
 ## 🚀 Quick Start
 
@@ -106,6 +111,66 @@ jackwongprofile/
 ├── scripts/              # Build/deployment scripts
 └── docs/                 # Documentation
 ```
+
+## ✨ Upcoming Enhancements (v1)
+
+### **Enhancement 1: High-Capacity Profile Picture Attachment**
+**Goal**: Support image uploads (.jpg, .png) up to 500MB with chunked processing
+**Current System**: Profile entity has `avatarUrl` field only (512 characters, external URLs)
+**Technical Requirements**:
+- REST endpoint for multipart file uploads
+- Storage service abstraction (local/S3/cloud)
+- Chunked upload protocol with resume capability
+- Image optimization pipeline (resize, compress, format conversion)
+- File validation and security measures
+
+### **Enhancement 2: Persistent Navigation in Admin Authentication Flow**
+**Goal**: Retain top navigation accessibility across public sections when on admin login page
+**Current System**: `/admin/login` route renders bare layout without navigation
+**Technical Requirements**:
+- Modify `AdminShell` to conditionally show navigation
+- Update `/admin/login` page to include persistent navigation
+- Maintain security while providing navigation access
+- Ensure language selection persistence across navigation
+
+### **Enhancement 3: Tri-Lingual Dynamic Content Schema**
+**Goal**: Comprehensive multilingual data model across all content (en/zhHant/zhHans)
+**Current System**: `LocalizedText` record supports three languages with fallback logic
+**Technical Requirements**:
+- Enhance client-side language state management
+- Update UI components to show active language context
+- Add language selection persistence (localStorage/cookies)
+- Improve editor interface for multilingual content
+
+### **Enhancement 4: DeepSeek API Auto-Translation Engine**
+**Goal**: Automated background translation pipeline during admin updates
+**Current System**: DeepSeek integration configured for news article analysis only
+**Technical Requirements**:
+- Extend `DeepSeekClient` with translation methods
+- Design translation-specific prompts for multilingual content
+- Create automated translation pipeline triggered on content updates
+- Implement error handling and manual override capabilities
+
+### **Implementation Priority**
+**Phase 1 (Foundation)**:
+1. Persistent navigation enhancement
+2. Client-side language selection improvements
+
+**Phase 2 (Core Features)**:
+3. File upload infrastructure with basic image handling
+4. DeepSeek translation integration for key content fields
+
+**Phase 3 (Advanced Features)**:
+5. Chunked uploads for large files
+6. Comprehensive image optimization pipeline
+7. Full automated translation across all multilingual fields
+
+### **Success Metrics**
+- **Upload Success Rate**: >95% successful file uploads under 500MB
+- **Translation Coverage**: >90% of content fields automatically translated
+- **User Satisfaction**: Improved navigation experience ratings
+- **Performance**: <2s page load times with new features
+- **Reliability**: <1% failure rate for automated processes
 
 ## 📦 Deployment
 
