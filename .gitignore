@@ -1,30 +1,57 @@
-# --- Java / Maven ---
-backend/target/
-*.class
-*.jar
-!backend/.mvn/wrapper/maven-wrapper.jar
-
-# --- Node / Next.js ---
+# Dependencies
 node_modules/
-frontend/.next/
-frontend/out/
-frontend/coverage/
-frontend/next-env.d.ts
-*.tsbuildinfo
+.pnpm-debug.log
+yarn-debug.log*
+yarn-error.log*
 
-# --- Environment ---
-.env
+# Build outputs
+.next/
+target/
+dist/
+build/
+out/
+
+# Environment files
 .env.local
-.env.*.local
-!.env.example
-
-# --- Editors / OS ---
-.idea/
-.vscode/
-.DS_Store
-*.iml
-*.log
-
-# --- Docker volumes ---
-docker/data/
+.env.development.local
+.env.test.local
+.env.production.local
 .env.sit
+.env.prod
+*.env
+.env
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Kiro workspace files (excluding specs that might be useful for others)
+.kiro/
+
+# Docker
+.dockerignore
+
+# Temporary files
+tmp/
+temp/
+
+# Coverage directories
+coverage/
+.nyc_output
+
+# Misc
+*.seed
+*.pid
+*.pid.lock
